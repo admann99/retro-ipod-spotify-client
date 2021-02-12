@@ -61,13 +61,15 @@ class SearchResults():
         self.albums = albums
         self.album_track_map = album_track_map
 
-scope = "user-library-read,user-follow-read"
+scope = "user-library-read,user-follow-read,user-read-playback-state"
 
 DATASTORE = datastore.Datastore()
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 pageSize = 50
 has_internet = False
+
+print(DATASTORE)
 
 def check_internet(request):
     global has_internet
@@ -129,7 +131,8 @@ def refresh_devices():
     results = sp.devices()
     DATASTORE.clearDevices()
     for _, item in enumerate(results['devices']):
-        if "Spotifypod" in item['name']:
+        print(item['name'])
+        if "raspotify (raspberrypi)" in item['name']:
             print(item['name'])
             device = UserDevice(item['id'], item['name'], item['is_active'])
             DATASTORE.setUserDevice(device)
@@ -355,6 +358,10 @@ sleep_time = 0.3
 thread = threading.Thread(target=bg_loop, args=())
 thread.daemon = True                            # Daemonize thread
 thread.start()
+
+print("CREATED SP")
+print(search('a'))
+# refresh_data()
 
 def run_async(fun):
     threading.Thread(target=fun, args=()).start()

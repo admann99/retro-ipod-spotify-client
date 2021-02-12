@@ -413,7 +413,6 @@ class SingleTrackPage(MenuPage):
 
     def render(self):
         r = super().render()
-        print("render track")
         context_uri = self.playlist.uri if self.playlist else self.album.uri
         spotify_manager.play_from_playlist(context_uri, self.track.uri, None)
         return r
@@ -435,10 +434,11 @@ class PlaceHolderPage(MenuPage):
 
 class RootPage(MenuPage):
     def __init__(self, previous_page):
-        super().__init__("sPot", previous_page, has_sub_page=True)
+        super().__init__("iPod", previous_page, has_sub_page=True)
         self.pages = [
             ArtistsPage(self),
             AlbumsPage(self),
+            SavedTracksPage(self),
             NewReleasesPage(self),
             PlaylistsPage(self),
             SearchPage(self),

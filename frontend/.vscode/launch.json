@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "spotifypod",
+            "type": "python",
+            "request": "launch",
+            "program": "~/retro-ipod-spotify-client/frontend/spotifypod.py",
+            "console": "integratedTerminal",
+            "env": {
+                "SPOTIPY_CLIENT_ID": "4b7211e1463a419d9bfe619e77725b0b",
+                "SPOTIPY_CLIENT_SECRET": "f9fc756a96aa46fe9899c502c114c75a",
+                "SPOTIPY_REDIRECT_URI": "http://localhost:8888/callback/",
+            }
+        }
+    ]
+}
