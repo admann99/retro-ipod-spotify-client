@@ -5,6 +5,8 @@ import threading
 import time
 import json
 
+DEVICE_NAME = "adam-ThinkPad-T590"
+
 class UserDevice():
     __slots__ = ['id', 'name', 'is_active']
     def __init__(self, id, name, is_active):
@@ -132,7 +134,7 @@ def refresh_devices():
     DATASTORE.clearDevices()
     for _, item in enumerate(results['devices']):
         print(item['name'])
-        if "raspotify (raspberrypi)" in item['name']:
+        if DEVICE_NAME in item['name']:
             print(item['name'])
             device = UserDevice(item['id'], item['name'], item['is_active'])
             DATASTORE.setUserDevice(device)

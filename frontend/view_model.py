@@ -1,7 +1,7 @@
 import spotify_manager
 from functools import lru_cache 
 
-MENU_PAGE_SIZE = 6
+MENU_PAGE_SIZE = 9
 
 # Screen render types
 MENU_RENDER_TYPE = 0

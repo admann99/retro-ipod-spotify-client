@@ -79,6 +79,16 @@ def flattenAlpha(img, invert=True):
     img.putalpha(mask)
 
     return img
+
+def flatten_alpha(img):
+    img = img.convert('RGBA')
+    pixdata = img.load()
+    width, height = img.size
+    for y in range(height):
+        for x in range(width):
+            if pixdata[x, y] == (255, 255, 255, 255):
+                pixdata[x, y] = (255, 255, 255, 0)
+    return img
    
 class tkinterApp(tk.Tk): 
       
@@ -87,10 +97,10 @@ class tkinterApp(tk.Tk):
         global LARGEFONT, MED_FONT, SCALE
         # __init__ function for class Tk 
         tk.Tk.__init__(self, *args, **kwargs)
-        # self.geometry("320x240")
-        SCALE = 320 / 930
-        LARGEFONT =("ChicagoFLF", int(72 * SCALE))
-        MED_FONT =("ChicagoFLF", int(52 * SCALE))
+        self.geometry("320x240")
+        SCALE = 1
+        LARGEFONT =("ChicagoFLF", int(18 * SCALE))
+        MED_FONT =("ChicagoFLF", int(14 * SCALE))
         # creating a container 
         container = tk.Frame(self)   
         container.pack(side = "top", fill = "both", expand = True)  
@@ -317,27 +327,24 @@ class GradiantCanvas(tk.Canvas):
                 ng = int(g1 + (g_ratio * i))
                 nb = int(b1 + (b_ratio * i))
                 color = "#%4.4x%4.4x%4.4x" % (nr,ng,nb)
-                self.gradiant.append(self.create_line(0, i, self.winfo_width(), i, fill=color))
+                line = self.create_line(0, i, self.winfo_width(), i, fill=color)
+                self.tag_lower(line)
+                self.gradiant.append(line)
 
 
 class ListItem(GradiantCanvas):
     def __init__(self, parent):  
-        GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=22, highlightthickness=0) 
+        GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=24, highlightthickness=0) 
         self.black_arrow_image = ImageTk.PhotoImage(Image.open('carret_black.bmp').resize((12, 12)))
-        self.white_arrow_image = ImageTk.PhotoImage(flattenAlpha(ImageChops.invert(Image.open('carret_black.bmp')).resize((48, 48))))
+        self.white_arrow_image = ImageTk.PhotoImage(ImageChops.invert(Image.open('carret_black.bmp')).resize((12, 12)))
+        self.white_arrow_image = ImageTk.PhotoImage(flatten_alpha(Image.open('carret_black.bmp').resize((12, 12))))
         self.empty_arrow_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_arrow_empty.png')))
-        # self.text = tk.Label(self,
-        #     justify=tk.LEFT,
-        #     anchor="w",
-        #     font = LARGEFONT,
-        #     foreground=SPOT_BLACK,
-        #     padx=(0))
-        # self.text.pack(side=tk.LEFT)
         self.gradiant = []
-        self.text = self.create_text(100, 20, text='')
+        self.text = None
         self.arrow_image = self.create_image(0, 0, image=self.empty_arrow_image)
     
     def set_list_item(self, text, line_type = LINE_NORMAL, show_arrow = False):
+        self.update_idletasks() 
         bgColor = SPOT_BLUE if line_type == LINE_HIGHLIGHT else SPOT_WHITE
         txtColor = SPOT_WHITE if line_type == LINE_HIGHLIGHT else \
             (SPOT_BLACK if line_type == LINE_NORMAL else SPOT_WHITE)
@@ -357,46 +364,50 @@ class ListItem(GradiantCanvas):
 
 class Header(GradiantCanvas):
     def __init__(self, parent):  
-        GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=22, highlightthickness=0) 
+        GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=24, highlightthickness=0) 
         self.text = None
-        self.set_text('iPod')
-    
-    def set_gradiant(self, start, end):
-        GradiantCanvas.set_gradiant(self, start, end)
-        self.set_text(self.itemcget(self.text, 'text'))
 
     def set_text(self, text=''):
-        if self.text:
-            self.delete(self.text)
-        self.text = self.create_text(0, self.winfo_height() / 2, text = text, font = LARGEFONT, anchor = 'w', fill=SPOT_BLACK)
+        if not self.text:
+            self.update_idletasks() 
+            self.text = self.create_text(self.winfo_width() / 2, self.winfo_height() / 2, text = text, font = LARGEFONT, fill=SPOT_BLACK)
+        else:
+            self.itemconfig(self.text, text=text)
+
+class Scrollbar(tk.Canvas):
+    def __init__(self, parent):
+        tk.Canvas.__init__(self, parent, bg=SPOT_WHITE, width=int(11 * SCALE), highlightthickness=0)
+        self.scrollbar_container_image = ImageTk.PhotoImage(Image.open('scrollbar_container_long.bmp'))
+        self.scrollbar_image = ImageTk.PhotoImage(Image.open('scrollbar_long.bmp'))
+        self.create_image(0, 0, image=self.scrollbar_container_image, anchor='nw')
+        self.scrollbar = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, width=int(11 * SCALE), height=50)
+        self.scrollbar.create_image(0, 0, image=self.scrollbar_image, anchor='nw')
+        self.scrollbar.pack()
+
+    def show_scroll(self, index, total_count):
+        scroll_bar_y_rel_size = max(0.9 - (total_count - MENU_PAGE_SIZE) * 0.06, 0.03)
+        scroll_bar_y_raw_size = scroll_bar_y_rel_size * self.winfo_height()
+        percentage = index / (total_count - 1)
+        self.scrollbar.configure(height=scroll_bar_y_raw_size)
+        self.scrollbar.place(x=0, y=percentage * 216)
+
 
 class StartPage(tk.Frame): 
     def __init__(self, parent, controller):  
         tk.Frame.__init__(self, parent) 
+        self.scrollbar_container_image = ImageTk.PhotoImage(Image.open('scrollbar_container.bmp'))
+        self.scrollbar_image = ImageTk.PhotoImage(Image.open('scrollbar.bmp'))
         self.play_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_play.png')))
         self.pause_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_pause.png')))
         self.space_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_space.png')))
         self.wifi_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_wifi.png')))
         self.configure(bg=SPOT_WHITE)
         self.header_container = Header(self)
-        # header_container = GradiantCanvas(self)
-        self.header_container.grid(sticky='we')
-
-        # self.header_label = tk.Label(header_container, text ="iPod", font = LARGEFONT, background=SPOT_WHITE, foreground=SPOT_BLACK) 
-        # self.header_label.grid(sticky='we', column=1, row=0, padx=(0, 0))
-        # self.play_indicator = tk.Label(header_container, image=self.space_image, background=SPOT_WHITE)
-        # self.play_indicator.grid(sticky='w', column=0, row=0, padx=(0 * SCALE,0))
-        # self.wifi_indicator = tk.Label(header_container, image=self.space_image, background=SPOT_WHITE)
-        # self.wifi_indicator.grid(sticky='w', column=2, row=0, padx=(0,90 * SCALE))
-
-
+        self.header_container.pack(fill='x')
         self.grid_columnconfigure(0, weight=1)
-        divider = tk.Canvas(self)
-        divider.configure(bg=SPOT_BLACK, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief='ridge')
-        divider.grid(row = 1, column = 0, sticky ="we", pady=0)
 
         contentFrame = tk.Canvas(self, bg=SPOT_GREEN, highlightthickness=0, relief='ridge')
-        contentFrame.grid(row = 2, column = 0, sticky ="nswe")
+        contentFrame.pack(fill='both')
 
         self.grid_rowconfigure(2, weight=1)
         listFrame = tk.Canvas(contentFrame)
@@ -406,47 +417,27 @@ class StartPage(tk.Frame):
         contentFrame.grid_columnconfigure(0, weight=1)
 
         # scrollbar 
-        self.scrollFrame = tk.Canvas(contentFrame)
-        self.scrollFrame.configure(bg=SPOT_WHITE, width=int(50 * SCALE), bd=0, highlightthickness=4, highlightbackground=SPOT_BLUE)
-        self.scrollBar = tk.Canvas(self.scrollFrame, bg=SPOT_BLACK, highlightthickness=0, width=int(20 * SCALE))
-        self.scrollBar.place(in_=self.scrollFrame, relx=5.5,  y=int(0 * SCALE), anchor="n", relwidth=.6, relheight=.9)
-        self.scrollFrame.grid(row=0, column=1, sticky="ns", padx=(0), pady=(0, 10))
+        self.scrollFrame = Scrollbar(contentFrame)
+        self.scrollFrame.grid(row=0, column=1, sticky="ns")
         
         self.listItems = []
         self.arrows=[]
-        for x in range(6):
+        for x in range(9):
             item = ListItem(listFrame)
             self.listItems.append(item)
-            # item.grid(row = x, column = 0, sticky="ew", padx = (0, 0))
-            item.pack(expand=True, fill='both', padx=0, pady=0)
+            item.pack(fill='x', padx=0, pady=0)
         listFrame.grid_columnconfigure(0, weight=1)
-        # listFrame.grid_columnconfigure(1, weight=1)
     
-
-    def show_scroll(self, index, total_count):
-        scroll_bar_y_rel_size = max(0.9 - (total_count - MENU_PAGE_SIZE) * 0.06, 0.03)
-        scroll_bar_y_raw_size = scroll_bar_y_rel_size * self.scrollFrame.winfo_height()
-        percentage = index / (total_count - 1)
-        offset = ((1 - percentage) * (scroll_bar_y_raw_size + int(20 * SCALE))) - (scroll_bar_y_raw_size + int(10 * SCALE))
-        self.scrollBar.place(in_=self.scrollFrame, relx=.5, rely=percentage, y=offset, anchor="n", relwidth=.66, relheight=scroll_bar_y_rel_size)
-        self.scrollFrame.grid(row=0, column=1, sticky="ns", padx=(0, 0), pady=(0, 10))
-
-    def hide_scroll(self):
-        self.scrollFrame.grid_forget()
 
     def set_header(self, header, now_playing = None, has_wifi = False):
         truncd_header = header if len(header) < 20 else header[0:17] + "..."
-        # self.header_label.configure(text=truncd_header)
         play_image = self.space_image
         if now_playing is not None:
             play_image = self.play_image if now_playing['is_playing'] else self.pause_image
-        # self.play_indicator.configure(image = play_image)
-        # self.play_indicator.image = play_image
         wifi_image = self.wifi_image if has_wifi else self.space_image
-        # self.wifi_indicator.configure(image = wifi_image)
-        # self.wifi_indicator.image = wifi_image
-        self.header_container.clear_gradiant()
-        self.header_container.set_gradiant(start='#f6f6ff', end='#c5cacd')
+        self.update_idletasks() 
+        self.header_container.set_text(text=truncd_header)
+        self.header_container.set_gradiant(start="#f6f6ff", end="#c5cacd")
 
 def processInput(app, input):
     global wheel_position, last_button, last_interaction
@@ -500,8 +491,6 @@ def processInput(app, input):
         screen_wake()
     last_interaction = now
 
-    # app.frames[StartPage].set_list_item(0, "Test") 
-
 def onKeyPress(event):
     c = event.keycode
     if (c == UP_KEY_CODE):
@@ -539,9 +528,9 @@ def render_menu(app, menu_render):
     app.show_frame(StartPage)
     page = app.frames[StartPage]
     if(menu_render.total_count > MENU_PAGE_SIZE):
-        page.show_scroll(menu_render.page_start, menu_render.total_count)
-    else:
-        page.hide_scroll()
+        page.scrollFrame.show_scroll(menu_render.page_start, menu_render.total_count)
+    # else:
+    #     page.scrollFrame.hide_scroll()
     for (i, line) in enumerate(menu_render.lines):
         page.listItems[i].set_list_item(text=line.title, line_type = line.line_type, show_arrow = line.show_arrow) 
     page.set_header(menu_render.header, menu_render.now_playing, menu_render.has_internet)
