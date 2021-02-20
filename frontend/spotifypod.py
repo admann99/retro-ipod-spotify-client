@@ -80,14 +80,14 @@ def flattenAlpha(img, invert=True):
 
     return img
 
-def flatten_alpha(img):
+def flatten_alpha(img, color=(255, 255, 255)):
     img = img.convert('RGBA')
     pixdata = img.load()
     width, height = img.size
     for y in range(height):
         for x in range(width):
-            if pixdata[x, y] == (255, 255, 255, 255):
-                pixdata[x, y] = (255, 255, 255, 0)
+            if pixdata[x, y] == color + (255,):
+                pixdata[x, y] = color + (0,)
     return img
    
 class tkinterApp(tk.Tk): 
@@ -142,7 +142,7 @@ class Marquee(tk.Canvas):
         # how much space we need. Use that to compute the initial size
         # of the canvas. 
         self.saved_text = text
-        self.text = self.create_text(0, -1000, text=text, font=LARGEFONT, fill=SPOT_BLACK, anchor="w", tags=("text",))
+        self.text = self.create_text(0, -1000, text=text, font=MED_FONT, fill=SPOT_BLACK, anchor="w", tags=("text",))
         (x0, y0, x1, y1) = self.bbox("text")
         self.width = (x1 - x0) + (2*margin) + (2*borderwidth)
         self.height = (y1 - y0) + (2*margin) + (2*borderwidth)
@@ -228,47 +228,46 @@ class NowPlayingFrame(tk.Frame):
         self.active = False
         self.update_time = False
         self.configure(bg=SPOT_WHITE)
-        self.header_label = tk.Label(self, text ="Now Playing", font = LARGEFONT, background=SPOT_WHITE, foreground=SPOT_BLACK) 
-        self.header_label.grid(sticky='we', padx=(0, 10))
+        self.header_container = Header(self)
+        self.header_container.pack(fill='x')
         self.grid_columnconfigure(0, weight=1)
-        divider = tk.Canvas(self)
-        divider.configure(bg=SPOT_BLACK, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief='ridge')
-        divider.grid(row = 1, column = 0, sticky ="we", pady=10, padx=(10, 30))
         contentFrame = tk.Canvas(self, bg=SPOT_WHITE, highlightthickness=0, relief='ridge')
-        contentFrame.grid(row = 2, column = 0, sticky ="nswe")
-        contentFrame.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        contentFrame.pack()
         self.context_label = tk.Label(contentFrame, text ="", font = MED_FONT, background=SPOT_WHITE, foreground=SPOT_BLACK) 
-        self.context_label.grid(row=0, column=0,sticky ="w", padx=int(50 * SCALE))
-        self.artist_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_WHITE, foreground=SPOT_BLACK) 
-        self.artist_label.grid(row=2, column=0,sticky ="we", padx=(10, 30))
-        self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_WHITE, foreground=SPOT_BLACK) 
-        self.album_label.grid(row=3, column=0,sticky ="we", padx=(10, 30))
+        self.context_label.pack()
+        self.artist_label = tk.Label(contentFrame, text ="", font = MED_FONT, background=SPOT_WHITE, foreground=SPOT_BLACK) 
+        self.artist_label.pack()
+        self.album_label = tk.Label(contentFrame, text ="", font = MED_FONT, background=SPOT_WHITE, foreground=SPOT_BLACK) 
+        self.album_label.pack()
         self.track_label = Marquee(contentFrame, text="")
-        self.track_label.grid(row=1, column=0,sticky ="we", padx=(30, 50))
-        self.progress_frame = tk.Canvas(contentFrame, height=int(72 * SCALE), bg=SPOT_WHITE, highlightthickness=0)
-        self.progress_frame.grid(row=4, column=0,sticky ="we", pady=(int(52 * SCALE), 0), padx=(30, 50))
-        self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
+        self.track_label.pack()
+        # self.progress_frame = tk.Canvas(contentFrame, bg=SPOT_WHITE, highlightthickness=0)
+        # self.progress_frame.pack(fill='x', expand=True)
+        self.progress_bar = ProgressBar(contentFrame)
+        self.progress_bar.pack()
+        self.progress_bg_img = ImageTk.PhotoImage(Image.open('progress_background.bmp'))
+        self.progress_fg_img = ImageTk.PhotoImage(Image.open('progress_foreground.bmp'))
         self.time_frame = tk.Canvas(contentFrame, bg=SPOT_WHITE, highlightthickness=0)
-        self.time_frame.grid(row=5, column=0,sticky ="we", padx=0, pady=(10, 0))
-        self.time_frame.grid_columnconfigure(0, weight=1)
+        self.time_frame.pack()
         self.elapsed_time = tk.Label(self.time_frame, text ="00:00", font = LARGEFONT, background=SPOT_WHITE, foreground=SPOT_BLACK)
-        self.elapsed_time.grid(row=0, column=0, sticky ="nw", padx = int(40 * SCALE))
+        self.elapsed_time.pack()
         self.remaining_time = tk.Label(self.time_frame, text ="-00:00", font = LARGEFONT, background=SPOT_WHITE, foreground=SPOT_BLACK)
-        self.remaining_time.grid(row=0, column=1, sticky ="ne", padx = int(60 * SCALE))
+        self.remaining_time.pack()
         self.cached_album = None
         self.cached_artist = None
         
     def update_now_playing(self, now_playing):
-        if not self.inflated:
-            parent_width = self.winfo_width()
-            if parent_width > 2:
-                self.midpoint = (parent_width / 2) - 40
-                self.progress_width = self.frame_img.width()
-                self.progress_start_x = self.midpoint - self.progress_width / 2
-                self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_BLACK)
-                self.progress_frame.create_image(self.midpoint, (self.frame_img.height() - 1)/2, image=self.frame_img)
-                self.inflated = True
+        self.header_container.set_text('Now playing')
+        # if not self.inflated:
+        #     parent_width = self.winfo_width()
+        #     if parent_width > 2:
+        #         self.midpoint = (parent_width / 2) - 40
+        #         self.progress_width = 316
+        #         self.progress_start_x = self.midpoint - self.progress_width / 2
+        #         self.progress_frame.create_image(0, 0, image=self.progress_bg_img)
+        #         self.progress = self.progress_frame.create_image(0, 0, image=self.progress_fg_img)
+        #         self.inflated = True
+        self.inflated = True
         if not now_playing:
             return
         self.track_label.set_text(now_playing['name'])
@@ -285,7 +284,6 @@ class NowPlayingFrame(tk.Frame):
         context_name = now_playing['context_name']
         truncd_context = context_name if context_name else "Now Playing"
         truncd_context = truncd_context if len(truncd_context) < 20 else truncd_context[0:17] + "..."
-        self.header_label.configure(text=truncd_context)
         update_delta = 0 if not now_playing['is_playing'] else (time.time() - now_playing["timestamp"]) * 1000.0
         adjusted_progress_ms = now_playing['progress'] + update_delta
         adjusted_remaining_ms = max(0, now_playing['duration'] - adjusted_progress_ms)
@@ -296,13 +294,26 @@ class NowPlayingFrame(tk.Frame):
             self.remaining_time.configure(text=remaining_txt)
         self.update_time = not self.update_time
         if self.inflated:
-            adjusted_progress_pct = min(1.0, adjusted_progress_ms / now_playing['duration'])
-            self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * adjusted_progress_pct + self.progress_start_x, int(72 * SCALE))
+            self.progress_bar.set_progress(min(1.0, adjusted_progress_ms / now_playing['duration']))
+            # self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * adjusted_progress_pct + self.progress_start_x, int(72 * SCALE))
         if(now_playing['track_index'] < 0):
             self.context_label.configure(text="")
             return
         context_str = str(now_playing['track_index']) + " of " + str(now_playing['track_total'])
         self.context_label.configure(text=context_str)
+
+class ProgressBar(tk.Canvas):
+    def __init__(self, parent):
+        tk.Canvas.__init__(self, parent, bg=SPOT_WHITE, highlightthickness=0, width=316, height=11)
+        self.progress_bg_img = ImageTk.PhotoImage(Image.open('progress_background.bmp'))
+        self.progress_fg_img = ImageTk.PhotoImage(Image.open('progress_foreground.bmp'))
+        self.create_image(0, 0, image=self.progress_bg_img, anchor='nw')
+        self.progress_fg = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, width=50, height=11 * SCALE)
+        self.progress_fg.create_image(0, 0, image=self.progress_fg_img, anchor='nw')
+        self.progress_fg.place(x=0, y=0)
+
+    def set_progress(self, percentage):
+        self.progress_fg.configure(width=percentage * 316)
 
 class GradiantCanvas(tk.Canvas):
     def __init__(self, *args, **kwargs):
@@ -335,9 +346,8 @@ class GradiantCanvas(tk.Canvas):
 class ListItem(GradiantCanvas):
     def __init__(self, parent):  
         GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=24, highlightthickness=0) 
-        self.black_arrow_image = ImageTk.PhotoImage(Image.open('carret_black.bmp').resize((12, 12)))
-        self.white_arrow_image = ImageTk.PhotoImage(ImageChops.invert(Image.open('carret_black.bmp')).resize((12, 12)))
-        self.white_arrow_image = ImageTk.PhotoImage(flatten_alpha(Image.open('carret_black.bmp').resize((12, 12))))
+        self.black_arrow_image = ImageTk.PhotoImage(Image.open('carret_black.bmp'))
+        self.white_arrow_image = ImageTk.PhotoImage(flatten_alpha(ImageChops.invert(Image.open('carret_black.bmp')), color=(0, 0, 0)))
         self.empty_arrow_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_arrow_empty.png')))
         self.gradiant = []
         self.text = None
@@ -358,21 +368,33 @@ class ListItem(GradiantCanvas):
             self.clear_gradiant()
         
         self.delete(self.text)
-        self.text = self.create_text(0, self.winfo_height() / 2, text = truncd_text, font = LARGEFONT, anchor = 'w', fill=txtColor)
+        self.text = self.create_text(6, self.winfo_height() / 2, text = truncd_text, font = MED_FONT, anchor = 'w', fill=txtColor)
         self.delete(self.arrow_image)
-        self.arrow_image = self.create_image(self.winfo_width(), self.winfo_height() / 2, image=arrowImg, anchor='e')
+        self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg, anchor='e')
 
 class Header(GradiantCanvas):
     def __init__(self, parent):  
         GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=24, highlightthickness=0) 
         self.text = None
 
-    def set_text(self, text=''):
+    def set_text(self, text='', now_playing = None, has_wifi = False):
+        self.space_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_space.png')))
+        self.play_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_play.png')))
+        self.pause_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_pause.png')))
+        self.wifi_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_wifi.png')))
+        text = text if len(text) < 20 else text[0:17] + "..."
+        play_image = self.space_image
+        if now_playing is not None:
+            play_image = self.play_image if now_playing['is_playing'] else self.pause_image
+        wifi_image = self.wifi_image if has_wifi else self.space_image
+        self.update_idletasks() 
+
         if not self.text:
             self.update_idletasks() 
-            self.text = self.create_text(self.winfo_width() / 2, self.winfo_height() / 2, text = text, font = LARGEFONT, fill=SPOT_BLACK)
+            self.text = self.create_text(self.winfo_width() / 2, self.winfo_height() / 2, text=text, font = MED_FONT, fill=SPOT_BLACK)
         else:
             self.itemconfig(self.text, text=text)
+        self.set_gradiant(start="#f6f6ff", end="#c5cacd")
 
 class Scrollbar(tk.Canvas):
     def __init__(self, parent):
@@ -389,7 +411,7 @@ class Scrollbar(tk.Canvas):
         scroll_bar_y_raw_size = scroll_bar_y_rel_size * self.winfo_height()
         percentage = index / (total_count - 1)
         self.scrollbar.configure(height=scroll_bar_y_raw_size)
-        self.scrollbar.place(x=0, y=percentage * 216)
+        self.scrollbar.place(x=0, y=percentage * (216 - scroll_bar_y_raw_size))
 
 
 class StartPage(tk.Frame): 
@@ -397,14 +419,9 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent) 
         self.scrollbar_container_image = ImageTk.PhotoImage(Image.open('scrollbar_container.bmp'))
         self.scrollbar_image = ImageTk.PhotoImage(Image.open('scrollbar.bmp'))
-        self.play_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_play.png')))
-        self.pause_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_pause.png')))
-        self.space_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_space.png')))
-        self.wifi_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_wifi.png')))
         self.configure(bg=SPOT_WHITE)
-        self.header_container = Header(self)
-        self.header_container.pack(fill='x')
-        self.grid_columnconfigure(0, weight=1)
+        self.header = Header(self)
+        self.header.pack(fill='x')
 
         contentFrame = tk.Canvas(self, bg=SPOT_GREEN, highlightthickness=0, relief='ridge')
         contentFrame.pack(fill='both')
@@ -428,16 +445,6 @@ class StartPage(tk.Frame):
             item.pack(fill='x', padx=0, pady=0)
         listFrame.grid_columnconfigure(0, weight=1)
     
-
-    def set_header(self, header, now_playing = None, has_wifi = False):
-        truncd_header = header if len(header) < 20 else header[0:17] + "..."
-        play_image = self.space_image
-        if now_playing is not None:
-            play_image = self.play_image if now_playing['is_playing'] else self.pause_image
-        wifi_image = self.wifi_image if has_wifi else self.space_image
-        self.update_idletasks() 
-        self.header_container.set_text(text=truncd_header)
-        self.header_container.set_gradiant(start="#f6f6ff", end="#c5cacd")
 
 def processInput(app, input):
     global wheel_position, last_button, last_interaction
@@ -533,7 +540,7 @@ def render_menu(app, menu_render):
     #     page.scrollFrame.hide_scroll()
     for (i, line) in enumerate(menu_render.lines):
         page.listItems[i].set_list_item(text=line.title, line_type = line.line_type, show_arrow = line.show_arrow) 
-    page.set_header(menu_render.header, menu_render.now_playing, menu_render.has_internet)
+    page.header.set_text(menu_render.header, menu_render.now_playing, menu_render.has_internet)
 
 def update_now_playing(now_playing):
     frame = app.frames[NowPlayingFrame]
