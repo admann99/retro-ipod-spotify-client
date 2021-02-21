@@ -377,7 +377,7 @@ class ListItem(GradiantCanvas):
         self.arrow_image = self.create_image(0, 0, image=self.empty_arrow_image)
 
     def set_list_item(self, text, line_type=LINE_NORMAL, show_arrow=False):
-        self.update_idletasks()
+        # self.update_idletasks()
         bgColor = SPOT_BLUE if line_type == LINE_HIGHLIGHT else SPOT_WHITE
         txtColor = SPOT_WHITE if line_type == LINE_HIGHLIGHT else \
             (SPOT_BLACK if line_type == LINE_NORMAL else SPOT_WHITE)
@@ -392,9 +392,9 @@ class ListItem(GradiantCanvas):
 
         self.itemconfig(self.text, text=truncd_text, fill=txtColor)
 
-        self.delete(self.arrow_image)
-        self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg,
-                                             anchor='e')
+        # self.delete(self.arrow_image)
+        # self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg,
+        #                                      anchor='e')
 
 
 class Header(GradiantCanvas):
