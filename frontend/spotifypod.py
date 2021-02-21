@@ -372,7 +372,8 @@ class ListItem(GradiantCanvas):
             flatten_alpha(ImageChops.invert(Image.open('carret_black.bmp')), color=(0, 0, 0)))
         self.empty_arrow_image = ImageTk.PhotoImage(Image.open('pod_arrow_empty.png'))
         self.gradiant = []
-        self.text = None
+        self.text = self.create_text(6, 12, text='Text', font=MED_FONT, anchor='w',
+                                     fill=SPOT_BLACK)
         self.arrow_image = self.create_image(0, 0, image=self.empty_arrow_image)
 
     def set_list_item(self, text, line_type=LINE_NORMAL, show_arrow=False):
@@ -389,9 +390,8 @@ class ListItem(GradiantCanvas):
         else:
             self.clear_gradiant()
 
-        self.delete(self.text)
-        self.text = self.create_text(6, self.winfo_height() / 2, text=truncd_text, font=MED_FONT, anchor='w',
-                                     fill=txtColor)
+        self.itemconfig(self.text, text=truncd_text, fill=txtColor)
+
         self.delete(self.arrow_image)
         self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg,
                                              anchor='e')
@@ -432,12 +432,15 @@ class Scrollbar(tk.Canvas):
         self.scrollbar = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, width=int(11 * SCALE), height=50)
         self.scrollbar.create_image(0, 0, image=self.scrollbar_image, anchor='nw')
         self.scrollbar.pack()
+        self.initialized = False
 
     def show_scroll(self, index, total_count):
         scroll_bar_y_rel_size = max(0.9 - (total_count - MENU_PAGE_SIZE) * 0.06, 0.03)
         scroll_bar_y_raw_size = scroll_bar_y_rel_size * self.winfo_height()
         percentage = index / (total_count - 1)
-        self.scrollbar.configure(height=scroll_bar_y_raw_size)
+        if not self.initialized:
+            self.scrollbar.configure(height=scroll_bar_y_raw_size)
+            self.initialized = True
         self.scrollbar.place(x=0, y=percentage * (216 - scroll_bar_y_raw_size))
 
 
@@ -563,7 +566,7 @@ def render_search(app, search_render):
 
 
 def render_menu(app, menu_render):
-    app.show_frame(StartPage)
+    # app.show_frame(StartPage)
     page = app.frames[StartPage]
     if (menu_render.total_count > MENU_PAGE_SIZE):
         page.scrollFrame.show_scroll(menu_render.page_start, menu_render.total_count)
