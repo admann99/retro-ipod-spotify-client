@@ -437,7 +437,7 @@ class Scrollbar(tk.Canvas):
     def show_scroll(self, index, total_count):
         scroll_bar_y_rel_size = max(0.9 - (total_count - MENU_PAGE_SIZE) * 0.06, 0.03)
         scroll_bar_y_raw_size = scroll_bar_y_rel_size * self.winfo_height()
-        percentage = index / (total_count - 1)
+        percentage = index / (total_count - MENU_PAGE_SIZE)
         if not self.initialized:
             self.scrollbar.configure(height=scroll_bar_y_raw_size)
             self.initialized = True

@@ -273,7 +273,7 @@ class MenuPage():
                     lines.append(LineItem(page.header, line_type, page.has_sub_page))
             else:
                 lines.append(EMPTY_LINE_ITEM)
-        return MenuRendering(lines=lines, header=self.header, page_start=self.index, total_count=total_size)
+        return MenuRendering(lines=lines, header=self.header, page_start=self.page_start, total_count=total_size)
 
 class PlaylistsPage(MenuPage):
     def __init__(self, previous_page):
