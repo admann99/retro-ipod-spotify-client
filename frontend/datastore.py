@@ -105,6 +105,7 @@ class Datastore():
     def setSavedTrack(self, index, track):
         self.r.set("track:"+str(index), pickle.dumps(track))
 
+    @lru_cache(maxsize=1000)
     def getSavedTrack(self, index):
         pickled_pl = self.r.get("track:"+str(index))
         return pickle.loads(pickled_pl)

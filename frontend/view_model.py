@@ -251,8 +251,6 @@ class MenuPage():
             return
         if (self.index <= self.page_start + (jump - 1)):
             self.page_start = self.page_start - jump
-            if (self.page_start == 1):
-                self.page_start = 0
         self.index = self.index - jump
 
     def nav_select(self):
@@ -422,8 +420,7 @@ class SavedTracksPage(MenuPage):
         super().__init__("Saved Tracks", previous_page, has_sub_page=True)
 
     def total_size(self):
-        # return spotify_manager.DATASTORE.getSavedTrackCount()
-        return 200
+        return spotify_manager.DATASTORE.getSavedTrackCount()
 
     def page_at(self, index):
         # play track
