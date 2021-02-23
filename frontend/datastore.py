@@ -7,6 +7,7 @@ class Datastore():
         self.now_playing = None
         self.r = redis.Redis()
 
+    @lru_cache(maxsize=50)
     def getPlaylistCount(self):
         return len(self.r.keys("playlist-index:*"))
 
@@ -14,12 +15,15 @@ class Datastore():
     def getSavedTrackCount(self):
         return len(self.r.keys("track:*"))
 
+    @lru_cache(maxsize=50)
     def getArtistCount(self):
         return len(self.r.keys("artist:*"))
 
+    @lru_cache(maxsize=50)
     def getAlbumCount(self):
         return len(self.r.keys("album-index:*"))
 
+    @lru_cache(maxsize=50)
     def getNewReleasesCount(self):
         return len(self.r.keys("nr-index:*"))
 
@@ -54,6 +58,7 @@ class Datastore():
             return None
         return self.getPlaylistUri(playlist_uri.decode('utf-8'))
 
+    @lru_cache(maxsize=50)
     def getPlaylistTracks(self, playlist_uri):
         playlist_id = playlist_uri.split(":")[-1]
         pickled_pl = self.r.get("playlist-tracks:"+str(playlist_id))
@@ -99,6 +104,7 @@ class Datastore():
             return None
         return pickle.loads(pickled_pl)
 
+    @lru_cache(maxsize=50)
     def getArtist(self, index):
         pickled_pl = self.r.get("artist:"+str(index))
         return pickle.loads(pickled_pl)
@@ -125,12 +131,15 @@ class Datastore():
     def getAllSavedDevices(self):
         return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("device:*")))
 
+    @lru_cache(maxsize=50)
     def getAllSavedPlaylists(self):
         return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("playlist-uri:*")))
 
+    @lru_cache(maxsize=50)
     def getAllSavedAlbums(self):
         return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("album-uri:*")))
 
+    @lru_cache(maxsize=50)
     def getAllNewReleases(self):
         return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("nr-uri:*")))
 
