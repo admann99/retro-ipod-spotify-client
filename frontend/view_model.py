@@ -422,7 +422,8 @@ class SavedTracksPage(MenuPage):
         super().__init__("Saved Tracks", previous_page, has_sub_page=True)
 
     def total_size(self):
-        return spotify_manager.DATASTORE.getSavedTrackCount()
+        # return spotify_manager.DATASTORE.getSavedTrackCount()
+        return 200
 
     def page_at(self, index):
         # play track
