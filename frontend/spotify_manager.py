@@ -5,7 +5,7 @@ import threading
 import time
 import json
 
-DEVICE_NAME = "adam-ThinkPad-T590"
+DEVICE_NAME = "raspotify"
 
 class UserDevice():
     __slots__ = ['id', 'name', 'is_active']

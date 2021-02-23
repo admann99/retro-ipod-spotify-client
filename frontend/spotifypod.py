@@ -670,7 +670,7 @@ def app_main_loop():
         if (loop_count >= 300):
             if (time.time() - last_interaction > SCREEN_TIMEOUT_SECONDS and screen_on):
                 screen_sleep()
-            render(app, page.render())
+            # render(app, page.render())
             loop_count = 0
     except:
         pass
