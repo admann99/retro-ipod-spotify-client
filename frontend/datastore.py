@@ -10,6 +10,7 @@ class Datastore():
     def getPlaylistCount(self):
         return len(self.r.keys("playlist-index:*"))
 
+    @lru_cache(maxsize=50)
     def getSavedTrackCount(self):
         return len(self.r.keys("track:*"))
 
