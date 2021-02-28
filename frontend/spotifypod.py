@@ -343,8 +343,7 @@ class GradiantCanvas(tk.Canvas):
 
     def clear_gradiant(self):
         for line in self.gradiant:
-            self.delete(line)
-        self.gradiant = []
+            self.itemconfigure(line, state='hidden')
 
     def set_gradiant(self, start, end):
         if not len(self.gradiant):
@@ -362,6 +361,10 @@ class GradiantCanvas(tk.Canvas):
                 line = self.create_line(0, i, self.winfo_width(), i, fill=color)
                 self.tag_lower(line)
                 self.gradiant.append(line)
+        else:
+            for line in self.gradiant:
+                self.itemconfigure(line, state='normal')
+
 
 
 class ListItem(GradiantCanvas):
