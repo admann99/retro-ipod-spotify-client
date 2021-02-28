@@ -340,14 +340,21 @@ class GradiantCanvas(tk.Canvas):
     def __init__(self, *args, **kwargs):
         tk.Canvas.__init__(self, *args, **kwargs)
         self.gradiant = []
+        self.gradiant_state = 'hidden'
+
+    def toggle_gradiant(self, state):
+        if state != self.gradiant_state:
+            self.gradiant_state = state
+            for line in self.gradiant:
+                self.itemconfigure(line, state=state)
 
     def clear_gradiant(self):
-        for line in self.gradiant:
-            self.delete(line)
-        self.gradiant = []
+        self.toggle_gradiant('hidden')
 
     def set_gradiant(self, start, end):
-        if not len(self.gradiant):
+        if len(self.gradiant):
+            self.toggle_gradiant('visible')
+        else:
             self.gradiant = []
             (r1, g1, b1) = self.winfo_rgb(start)
             (r2, g2, b2) = self.winfo_rgb(end)
