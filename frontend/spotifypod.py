@@ -351,22 +351,21 @@ class GradiantCanvas(tk.Canvas):
     def clear_gradiant(self):
         self.toggle_gradiant('hidden')
 
-    def set_gradiant(self, start, end):
-        if len(self.gradiant):
-            self.toggle_gradiant('visible')
-        else:
+    def set_gradiant(self, start, end, height, width):
+        self.toggle_gradiant('normal')
+        if not len(self.gradiant):
             self.gradiant = []
             (r1, g1, b1) = self.winfo_rgb(start)
             (r2, g2, b2) = self.winfo_rgb(end)
-            r_ratio = float(r2 - r1) / self.winfo_height()
-            g_ratio = float(g2 - g1) / self.winfo_height()
-            b_ratio = float(b2 - b1) / self.winfo_height()
-            for i in range(self.winfo_height()):
+            r_ratio = float(r2 - r1) / height
+            g_ratio = float(g2 - g1) / height
+            b_ratio = float(b2 - b1) / height
+            for i in range(height):
                 nr = int(r1 + (r_ratio * i))
                 ng = int(g1 + (g_ratio * i))
                 nb = int(b1 + (b_ratio * i))
                 color = "#%4.4x%4.4x%4.4x" % (nr, ng, nb)
-                line = self.create_line(0, i, self.winfo_width(), i, fill=color)
+                line = self.create_line(0, i, width, i, fill=color)
                 self.tag_lower(line)
                 self.gradiant.append(line)
 
@@ -393,7 +392,7 @@ class ListItem(GradiantCanvas):
         arrowImg = self.empty_arrow_image if not show_arrow else \
             (self.white_arrow_image if line_type == LINE_HIGHLIGHT else self.black_arrow_image)
         if line_type == LINE_HIGHLIGHT:
-            self.set_gradiant(start="#72a5dc", end="#4188e4")
+            self.set_gradiant(start="#72a5dc", end="#4188e4", height=24, width=320)
         else:
             self.clear_gradiant()
 
@@ -427,7 +426,7 @@ class Header(GradiantCanvas):
                                          fill=SPOT_BLACK)
         else:
             self.itemconfig(self.text, text=text)
-        self.set_gradiant(start="#f6f6ff", end="#c5cacd")
+        self.set_gradiant(start="#f6f6ff", end="#c5cacd", height=24, width=320)
 
 
 class Scrollbar(tk.Canvas):
