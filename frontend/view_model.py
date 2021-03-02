@@ -467,7 +467,7 @@ class UpdateSoftwarePage(MenuPage):
 
 class ReloadDataPage(MenuPage):
     def __init__(self, previous_page):
-        super().__init__("Reload data", previous_page, has_sub_page=False)
+        super().__init__("Reload Data", previous_page, has_sub_page=False)
         self.page_start = 0
         self.reloaded = False
 
