@@ -10,6 +10,7 @@
             "request": "launch",
             "program": "~/retro-ipod-spotify-client/frontend/spotifypod.py",
             "console": "integratedTerminal",
+            "args": ["--windowed"],
             "env": {
                 "SPOTIPY_CLIENT_ID": "4b7211e1463a419d9bfe619e77725b0b",
                 "SPOTIPY_CLIENT_SECRET": "f9fc756a96aa46fe9899c502c114c75a",

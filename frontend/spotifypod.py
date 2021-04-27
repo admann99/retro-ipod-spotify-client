@@ -572,7 +572,7 @@ def render_search(app, search_render):
 
 
 def render_menu(app, menu_render):
-    # app.show_frame(StartPage)
+    app.show_frame(StartPage)
     page = app.frames[StartPage]
     if (menu_render.total_count > MENU_PAGE_SIZE):
         page.scrollFrame.show_scroll(menu_render.page_start, menu_render.total_count)
