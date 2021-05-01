@@ -373,22 +373,25 @@ class GradiantCanvas(tk.Canvas):
 class ListItem(GradiantCanvas):
     def __init__(self, parent):
         GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=24, highlightthickness=0)
-        self.black_arrow_image = ImageTk.PhotoImage(Image.open('carret_black.bmp'))
-        self.white_arrow_image = ImageTk.PhotoImage(
-            flatten_alpha(ImageChops.invert(Image.open('carret_black.bmp')), color=(0, 0, 0)))
+        self.black_arrow_image = self.create_arrow_image('pod_arrow_blk.png')
+        self.white_arrow_image = self.create_arrow_image('pod_arrow_white.png')
         self.empty_arrow_image = ImageTk.PhotoImage(Image.open('pod_arrow_empty.png'))
         self.gradiant = []
         self.text = self.create_text(6, 12, text='Text', font=MED_FONT, anchor='w',
                                      fill=SPOT_BLACK)
-        self.arrow_image = self.create_image(0, 0, image=self.empty_arrow_image)
+        self.current_arrow_image = self.empty_arrow_image
+        self.arrow_image = self.create_image(0, 0, image=self.current_arrow_image)
+    
+    def create_arrow_image(self, src):
+        img = Image.open(src)
+        img = img.resize((8, 12), Image.ANTIALIAS)
+        return ImageTk.PhotoImage(img)
 
     def set_list_item(self, text, line_type=LINE_NORMAL, show_arrow=False):
-        # self.update_idletasks()
         bgColor = SPOT_BLUE if line_type == LINE_HIGHLIGHT else SPOT_WHITE
         txtColor = SPOT_WHITE if line_type == LINE_HIGHLIGHT else \
             (SPOT_BLACK if line_type == LINE_NORMAL else SPOT_WHITE)
         truncd_text = text if len(text) < 17 else text[0:15] + "..."
-        # self.listItems[index].configure(bg = bgColor)
         arrowImg = self.empty_arrow_image if not show_arrow else \
             (self.white_arrow_image if line_type == LINE_HIGHLIGHT else self.black_arrow_image)
         if line_type == LINE_HIGHLIGHT:
@@ -398,9 +401,12 @@ class ListItem(GradiantCanvas):
 
         self.itemconfig(self.text, text=truncd_text, fill=txtColor)
 
-        # self.delete(self.arrow_image)
-        # self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg,
-        #                                      anchor='e')
+        if (self.current_arrow_image != arrowImg):
+            self.current_arrow_image = arrowImg
+            self.delete(self.arrow_image)
+            self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg,
+                                                anchor='e')
+
 
 
 class Header(GradiantCanvas):
