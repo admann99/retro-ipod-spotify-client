@@ -454,16 +454,11 @@ class UpdateSoftwarePage(MenuPage):
     def __init__(self, previous_page):
         super().__init__("Update Software", previous_page, has_sub_page=False)
         self.page_start = 0
-        self.reloaded = False
 
     def render(self):
         process = subprocess.Popen(["git", "pull"], stdout=subprocess.PIPE)
         output = process.communicate()[0]
-        print(output)
-
         os.execv(sys.executable, ['python3'] + sys.argv)
-
-
 
 class ReloadDataPage(MenuPage):
     def __init__(self, previous_page):

@@ -441,12 +441,19 @@ class Scrollbar(tk.Canvas):
         self.initialized = False
 
     def show_scroll(self, index, total_count):
+        self.grid(row=0, column=1, sticky="ns")
+        scroll_bar_y_rel_size = max(0.9 - (total_count - MENU_PAGE_SIZE) * 0.06, 0.03)
+        scroll_bar_y_raw_size = scroll_bar_y_rel_size * 216
+        percentage = index / (total_count - MENU_PAGE_SIZE)
+        self.scrollbar.configure(height=scroll_bar_y_raw_size)
+
+    def hide_scroll(self):
+        self.grid_remove()
+    
+    def set_position(self, index, total_count):
         scroll_bar_y_rel_size = max(0.9 - (total_count - MENU_PAGE_SIZE) * 0.06, 0.03)
         scroll_bar_y_raw_size = scroll_bar_y_rel_size * self.winfo_height()
         percentage = index / (total_count - MENU_PAGE_SIZE)
-        if not self.initialized:
-            self.scrollbar.configure(height=scroll_bar_y_raw_size)
-            self.initialized = True
         self.scrollbar.place(x=0, y=percentage * (216 - scroll_bar_y_raw_size))
 
 
@@ -471,7 +478,6 @@ class StartPage(tk.Frame):
 
         # scrollbar 
         self.scrollFrame = Scrollbar(contentFrame)
-        self.scrollFrame.grid(row=0, column=1, sticky="ns")
 
         self.listItems = []
         self.arrows = []
@@ -571,16 +577,21 @@ def render_search(app, search_render):
     search_render.subscribe(app, update_search)
 
 
-def render_menu(app, menu_render):
+def init_menu(app, menu_render):
     app.show_frame(StartPage)
     page = app.frames[StartPage]
     if (menu_render.total_count > MENU_PAGE_SIZE):
         page.scrollFrame.show_scroll(menu_render.page_start, menu_render.total_count)
-    # else:
-    #     page.scrollFrame.hide_scroll()
+    else:
+        page.scrollFrame.hide_scroll()
+    page.header.set_text(menu_render.header, menu_render.now_playing, menu_render.has_internet)
+
+
+def render_menu(app, menu_render):
+    page = app.frames[StartPage]
+    page.scrollFrame.set_position(menu_render.page_start, menu_render.total_count)
     for (i, line) in enumerate(menu_render.lines):
         page.listItems[i].set_list_item(text=line.title, line_type=line.line_type, show_arrow=line.show_arrow)
-    page.header.set_text(menu_render.header, menu_render.now_playing, menu_render.has_internet)
 
 
 def update_now_playing(now_playing):
@@ -591,6 +602,15 @@ def update_now_playing(now_playing):
 def render_now_playing(app, now_playing_render):
     app.show_frame(NowPlayingFrame)
     now_playing_render.subscribe(app, update_now_playing)
+
+
+def init_page(app, render):
+    if (render.type == MENU_RENDER_TYPE):
+        init_menu(app, render)
+    # elif (render.type == NOW_PLAYING_RENDER):
+    #     init_now_playing(app, render)
+    # elif (render.type == SEARCH_RENDER):
+    #     init_search(app, render)
 
 
 def render(app, render):
@@ -614,6 +634,7 @@ def onSelectPressed():
         return
     page.render().unsubscribe()
     page = page.nav_select()
+    init_page(app, page.render())
     render(app, page.render())
 
 
@@ -623,6 +644,7 @@ def onBackPressed():
     if (previous_page):
         page.render().unsubscribe()
         page = previous_page
+        init_page(app, page.render())
         render(app, page.render())
 
 
@@ -653,6 +675,7 @@ def onDownPressed():
 # Driver Code 
 page = RootPage(None)
 app = tkinterApp()
+init_page(app, page.render())
 render(app, page.render())
 app.overrideredirect(True)
 app.overrideredirect(False)
