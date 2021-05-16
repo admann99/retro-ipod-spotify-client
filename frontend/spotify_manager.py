@@ -133,11 +133,18 @@ def refresh_devices():
     results = sp.devices()
     DATASTORE.clearDevices()
     for _, item in enumerate(results['devices']):
-        print(item['name'])
         if DEVICE_NAME in item['name']:
             print(item['name'])
             device = UserDevice(item['id'], item['name'], item['is_active'])
             DATASTORE.setUserDevice(device)
+
+def set_device(item):
+    DATASTORE.clearDevices()
+    device = UserDevice(item['id'], item['name'], item['is_active'])
+    DATASTORE.setUserDevice(device)
+
+def get_devices():
+    return sp.devices()['devices']
 
 def parse_album(album):
     artist = album['artists'][0]['name']

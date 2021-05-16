@@ -433,6 +433,31 @@ class PlaceHolderPage(MenuPage):
     def __init__(self, header, previous_page, has_sub_page=True, is_title = False):
         super().__init__(header, previous_page, has_sub_page, is_title)
 
+
+class DevicesPage(MenuPage):
+    def __init__(self, previous_page):
+        super().__init__("Devices", previous_page, has_sub_page=True)
+
+    def total_size(self):
+        return len(spotify_manager.get_devices())
+
+    def page_at(self, index):
+        # play track
+        # return SingleTrackPage(spotify_manager.DATASTORE.getSavedDevice(index), self)
+        return SetDevicePage(spotify_manager.get_devices()[index], self)
+
+
+class SetDevicePage(MenuPage):
+    def __init__(self, device, previous_page):
+        super().__init__(device['name'], previous_page, has_sub_page=False)
+        self.page_start = 0
+        self.device = device
+
+    def render(self):
+        spotify_manager.set_device(self.device)
+        return MenuRendering(lines=[], header=self.header, page_start=self.page_start, total_count=0)
+
+
 class SettingsPage(MenuPage):
     def __init__(self, previous_page):
         super().__init__("Settings", previous_page, has_sub_page=True)
@@ -440,6 +465,7 @@ class SettingsPage(MenuPage):
 
     def get_pages(self):
         return [
+            DevicesPage(self),
             ReloadDataPage(self),
             UpdateSoftwarePage(self),
         ]

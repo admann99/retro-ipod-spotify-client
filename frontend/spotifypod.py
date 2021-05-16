@@ -413,17 +413,17 @@ class Header(GradiantCanvas):
     def __init__(self, parent):
         GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=24, highlightthickness=0)
         self.text = None
+        self.space_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_space.png')))
+        self.play_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_play.png')))
+        self.pause_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_pause.png')))
+        self.wifi_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_wifi.png')))
 
     def set_text(self, text='', now_playing=None, has_wifi=False):
-        # self.space_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_space.png')))
-        # self.play_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_play.png')))
-        # self.pause_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_pause.png')))
-        # self.wifi_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_wifi.png')))
         text = text if len(text) < 20 else text[0:17] + "..."
-        # play_image = self.space_image
-        # if now_playing is not None:
-        #     play_image = self.play_image if now_playing['is_playing'] else self.pause_image
-        # wifi_image = self.wifi_image if has_wifi else self.space_image
+        play_image = self.space_image
+        if now_playing is not None:
+            play_image = self.play_image if now_playing['is_playing'] else self.pause_image
+        wifi_image = self.wifi_image if has_wifi else self.space_image
         self.update_idletasks()
 
         if not self.text:
