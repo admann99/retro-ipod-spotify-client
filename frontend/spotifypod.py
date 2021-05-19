@@ -189,7 +189,7 @@ class Marquee(tk.Canvas):
         if win_width < 2:
             pass
         elif self.width < win_width:
-            self.coords("text", (win_width / 2) - (self.width / 2), self.winfo_height() / 2)
+            self.coords("text", 0, self.winfo_height() / 2)
             return
         elif x1 < 0 or y0 < 0 or self.reset:
             self.reset = False
@@ -245,18 +245,23 @@ class NowPlayingFrame(tk.Frame):
         self.configure(bg=SPOT_WHITE)
         self.header_container = Header(self)
         self.header_container.pack(fill='x')
-        self.grid_columnconfigure(0, weight=1)
+        # self.grid_columnconfigure(0, weight=1)
         contentFrame = tk.Canvas(self, bg=SPOT_WHITE, highlightthickness=0, relief='ridge')
-        contentFrame.pack()
-        self.context_label = tk.Label(contentFrame, text="", font=MED_FONT, background=SPOT_WHITE,
-                                      foreground=SPOT_BLACK)
-        self.context_label.pack()
-        self.artist_label = tk.Label(contentFrame, text="", font=MED_FONT, background=SPOT_WHITE, foreground=SPOT_BLACK)
-        self.artist_label.pack()
-        self.album_label = tk.Label(contentFrame, text="", font=MED_FONT, background=SPOT_WHITE, foreground=SPOT_BLACK)
-        self.album_label.pack()
-        self.track_label = Marquee(contentFrame, text="")
-        self.track_label.pack()
+        contentFrame.pack(padx=(10, 10), pady=(10, 10))
+        self.context_label = tk.Label(contentFrame, text="0 of 0", font=MED_FONT, background=SPOT_WHITE,
+                                     foreground=SPOT_BLACK, anchor='w')
+        self.context_label.pack(fill='x')
+        track_info = tk.Canvas(contentFrame, bg=SPOT_WHITE, highlightthickness=0)
+        track_info.pack(fill='x', pady=(10, 20))
+        self.album_art = tk.Canvas(track_info, highlightthickness=0, width=100, height=100)
+        self.album_art.pack(side=tk.LEFT, padx=(0, 10))
+        label_padding = (5, 5)
+        self.artist_label = Marquee(track_info, text="Unknown Artist")
+        self.artist_label.pack(fill='x', pady=label_padding)
+        self.album_label = Marquee(track_info, text="Unknown Album")
+        self.album_label.pack(fill='x', pady=label_padding)
+        self.track_label = Marquee(track_info, text="Unknown Track")
+        self.track_label.pack(fill='x', pady=label_padding)
         # self.progress_frame = tk.Canvas(contentFrame, bg=SPOT_WHITE, highlightthickness=0)
         # self.progress_frame.pack(fill='x', expand=True)
         self.progress_bar = ProgressBar(contentFrame)
@@ -264,17 +269,21 @@ class NowPlayingFrame(tk.Frame):
         self.progress_bg_img = ImageTk.PhotoImage(Image.open('progress_background.bmp'))
         self.progress_fg_img = ImageTk.PhotoImage(Image.open('progress_foreground.bmp'))
         self.time_frame = tk.Canvas(contentFrame, bg=SPOT_WHITE, highlightthickness=0)
-        self.time_frame.pack()
-        self.elapsed_time = tk.Label(self.time_frame, text="00:00", font=LARGEFONT, background=SPOT_WHITE,
+        self.time_frame.pack(fill='x')
+        self.elapsed_time = tk.Label(self.time_frame, text="00:00", font=MED_FONT, background=SPOT_WHITE,
                                      foreground=SPOT_BLACK)
-        self.elapsed_time.pack()
-        self.remaining_time = tk.Label(self.time_frame, text="-00:00", font=LARGEFONT, background=SPOT_WHITE,
+        self.elapsed_time.pack(side=tk.LEFT)
+        self.remaining_time = tk.Label(self.time_frame, text="-00:00", font=MED_FONT, background=SPOT_WHITE,
                                        foreground=SPOT_BLACK)
-        self.remaining_time.pack()
+        self.remaining_time.pack(side=tk.RIGHT)
         self.cached_album = None
         self.cached_artist = None
 
     def update_now_playing(self, now_playing):
+        not_found = tk.PhotoImage(file='album_not_found.png')
+        self.not_found = ImageTk.PhotoImage(Image.open('album_not_found.png').resize((100, 100), Image.ANTIALIAS))
+        self.album_image = self.album_art.create_image(0, 0, image=self.not_found, anchor='nw')
+        self.album_art.pack()
         self.header_container.set_text('Now playing')
         # if not self.inflated:
         #     parent_width = self.winfo_width()
@@ -373,8 +382,8 @@ class GradiantCanvas(tk.Canvas):
 class ListItem(GradiantCanvas):
     def __init__(self, parent):
         GradiantCanvas.__init__(self, parent, bg=SPOT_WHITE, height=24, highlightthickness=0)
-        self.black_arrow_image = self.create_arrow_image('pod_arrow_blk.png')
-        self.white_arrow_image = self.create_arrow_image('pod_arrow_white.png')
+        self.black_arrow_image = ListItem.create_arrow_image('pod_arrow_blk.png')
+        self.white_arrow_image = ListItem.create_arrow_image('pod_arrow_white.png')
         self.empty_arrow_image = ImageTk.PhotoImage(Image.open('pod_arrow_empty.png'))
         self.gradiant = []
         self.text = self.create_text(6, 12, text='Text', font=MED_FONT, anchor='w',
@@ -382,7 +391,7 @@ class ListItem(GradiantCanvas):
         self.current_arrow_image = self.empty_arrow_image
         self.arrow_image = self.create_image(0, 0, image=self.current_arrow_image)
     
-    def create_arrow_image(self, src):
+    def create_arrow_image(src):
         img = Image.open(src)
         img = img.resize((8, 12), Image.ANTIALIAS)
         return ImageTk.PhotoImage(img)
