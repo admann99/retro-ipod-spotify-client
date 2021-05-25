@@ -468,6 +468,7 @@ class SettingsPage(MenuPage):
             DevicesPage(self),
             ReloadDataPage(self),
             UpdateSoftwarePage(self),
+            ShutdownPage(self),
         ]
 
     def total_size(self):
@@ -475,6 +476,16 @@ class SettingsPage(MenuPage):
 
     def page_at(self, index):
         return self.get_pages()[index]
+
+class ShutdownPage(MenuPage):
+    def __init__(self, previous_page):
+        super().__init__("Shutdown", previous_page, has_sub_page=False)
+        self.page_start = 0
+
+    def render(self):
+        process = subprocess.Popen(["sudo", "poweroff"], stdout=subprocess.PIPE)
+        output = process.communicate()[0]
+        os.execv(sys.executable, ['python3'] + sys.argv)
 
 class UpdateSoftwarePage(MenuPage):
     def __init__(self, previous_page):
