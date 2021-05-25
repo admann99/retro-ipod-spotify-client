@@ -300,13 +300,11 @@ class NowPlayingFrame(tk.Frame):
         self.track_label.set_text(now_playing['name'])
         artist = now_playing['artist']
         if self.cached_artist != artist:
-            truncd_artist = artist if len(artist) < 20 else artist[0:17] + "..."
-            self.artist_label.configure(text=truncd_artist)
+            self.artist_label.set_text(artist)
             self.cached_artist = artist
         album = now_playing['album']
         if self.cached_album != album:
-            truncd_album = album if len(album) < 20 else album[0:17] + "..."
-            self.album_label.configure(text=truncd_album)
+            self.album_label.set_text(album)
             self.cached_album = album
         context_name = now_playing['context_name']
         truncd_context = context_name if context_name else "Now Playing"
