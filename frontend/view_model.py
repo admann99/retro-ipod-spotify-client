@@ -302,30 +302,17 @@ class MenuPage2(MenuPage):
     def get_title(self):
         return ""
 
-class PlaylistsPage(MenuPage):
-    def __init__(self, previous_page):
-        super().__init__(self.get_title(), previous_page, has_sub_page=True)
-        self.playlists = self.get_content()
-        self.num_playlists = len(self.playlists)
-
+class PlaylistsPage(MenuPage2):
     def get_title(self):
         return "Playlists"
-
     def get_content(self):
-        return spotify_manager.DATASTORE.getAllSavedPlaylists()
+        return [SinglePlaylistPage(p, self) for p in spotify_manager.DATASTORE.getAllSavedPlaylists()]
 
-    def total_size(self):
-        return self.num_playlists
-
-    @lru_cache(maxsize=15)
-    def page_at(self, index):
-        return SinglePlaylistPage(self.playlists[index], self)
-
-class AlbumsPage(PlaylistsPage):
+class AlbumsPage(MenuPage2):
     def get_title(self):
         return "Albums"
     def get_content(self):
-        return spotify_manager.DATASTORE.getAllSavedAlbums()
+        return [SinglePlaylistPage(p, self) for p in spotify_manager.DATASTORE.getAllSavedAlbums()]
 
 class SearchResultsPage(MenuPage):
     def __init__(self, previous_page, results):
@@ -374,33 +361,21 @@ class SearchResultsPage(MenuPage):
             return 2
         return 1
 
-class NewReleasesPage(PlaylistsPage):
-    def __init__(self, previous_page):
-        super().__init__(previous_page)
-
+class NewReleasesPage(MenuPage2):
     def get_title(self):
         return "New Releases"
-
     def get_content(self):
-        return spotify_manager.DATASTORE.getAllNewReleases()
+        return [SinglePlaylistPage(p, self) for p in spotify_manager.DATASTORE.getAllNewReleases()]
 
-class ArtistsPage(MenuPage):
-    def __init__(self, previous_page):
-        super().__init__("Artists", previous_page, has_sub_page=True)
-
-    def total_size(self):
-        return spotify_manager.DATASTORE.getArtistCount()
-
-    def page_at(self, index):
-        # play track
-        artist = spotify_manager.DATASTORE.getArtist(index)
+class ArtistsPage(MenuPage2):
+    def get_title(self):
+        return "Artists"
+    def get_content(self):
+        return list(map(self.get_artist_page, spotify_manager.DATASTORE.getAllSavedArtists()))
+    def get_artist_page(self, artist):
         command = NowPlayingCommand(lambda: spotify_manager.play_artist(artist.uri))
         return NowPlayingPage(self, artist.name, command)
     
-class SingleArtistPage(MenuPage):
-    def __init__(self, artistName, previous_page):
-        super().__init__(artistName, previous_page, has_sub_page=True)
-
 class SinglePlaylistPage(MenuPage2):
     def __init__(self, playlist, previous_page):
         super().__init__(previous_page, title=playlist.name, has_sub_page=True)
@@ -408,7 +383,7 @@ class SinglePlaylistPage(MenuPage2):
         self.tracks = None
 
     def get_content(self):
-        return map(self.get_now_playing_page, spotify_manager.DATASTORE.getPlaylistTracks(self.playlist.uri))
+        return list(map(self.get_now_playing_page, spotify_manager.DATASTORE.getPlaylistTracks(self.playlist.uri)))
 
     def get_now_playing_page(self, track):
         command = NowPlayingCommand(lambda: spotify_manager.play_from_playlist(self.playlist.uri, track.uri, None))
@@ -436,12 +411,7 @@ class SavedTracksPage(MenuPage2):
     def get_title(self):
         return "Saved Tracks"
     def get_content(self):
-        length = spotify_manager.DATASTORE.getSavedTrackCount()
-        return [SingleTrackPage(spotify_manager.DATASTORE.getSavedTrack(i), self) for i in range(length)]
-
-    def page_at(self, index):
-        # play track
-        return SingleTrackPage(spotify_manager.DATASTORE.getSavedTrack(index), self)
+        return [SingleTrackPage(t, self) for t in spotify_manager.DATASTORE.getAllSavedTracks()]
 
 class PlaceHolderPage(MenuPage):
     def __init__(self, header, previous_page, has_sub_page=True, is_title = False):
@@ -503,10 +473,11 @@ class ReloadDataPage(MenuPage):
         self.page_start = 0
         self.reloaded = False
 
-class RootPage(MenuPage):
-    def __init__(self, previous_page):
-        super().__init__("iPod", previous_page, has_sub_page=True)
-        self.pages = [
+class RootPage(MenuPage2):
+    def get_title(self):
+        return "iPod"
+    def get_content(self):
+        return [
             ArtistsPage(self),
             AlbumsPage(self),
             SavedTracksPage(self),
@@ -516,19 +487,3 @@ class RootPage(MenuPage):
             SettingsPage(self),
             NowPlayingPage(self, "Now Playing", NowPlayingCommand())
         ]
-        self.index = 0
-        self.page_start = 0
-    
-    def get_pages(self):
-        if (not spotify_manager.DATASTORE.now_playing):
-            return self.pages[0:-1]
-        return self.pages
-    
-    def total_size(self):
-        return len(self.get_pages())
-
-    def page_at(self, index):
-        return self.get_pages()[index]
-
-
-    

@@ -394,6 +394,15 @@ class ListItem(GradiantCanvas):
         img = img.resize((8, 12), Image.ANTIALIAS)
         return ImageTk.PhotoImage(img)
 
+    def init_arrow(self, line_type, show_arrow=False, force_redraw=False):
+        arrowImg = self.empty_arrow_image if not show_arrow else \
+            (self.white_arrow_image if line_type == LINE_HIGHLIGHT else self.black_arrow_image)
+        if (self.current_arrow_image != arrowImg or force_redraw):
+            self.current_arrow_image = arrowImg
+            self.delete(self.arrow_image)
+            self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg,
+                                                anchor='e')
+
     def set_list_item(self, text, line_type=LINE_NORMAL, show_arrow=False):
         bgColor = SPOT_BLUE if line_type == LINE_HIGHLIGHT else SPOT_WHITE
         txtColor = SPOT_WHITE if line_type == LINE_HIGHLIGHT else \
@@ -407,12 +416,7 @@ class ListItem(GradiantCanvas):
             self.clear_gradiant()
 
         self.itemconfig(self.text, text=truncd_text, fill=txtColor)
-
-        if (self.current_arrow_image != arrowImg):
-            self.current_arrow_image = arrowImg
-            self.delete(self.arrow_image)
-            self.arrow_image = self.create_image(self.winfo_width() - 6, self.winfo_height() / 2, image=arrowImg,
-                                                anchor='e')
+        self.init_arrow(line_type, show_arrow)
 
 
 
@@ -598,6 +602,8 @@ def init_menu(app, menu_render):
     else:
         page.scrollFrame.hide_scroll()
     page.header.set_text(menu_render.header, menu_render.now_playing, menu_render.has_internet)
+    for (i, line) in enumerate(menu_render.lines):
+        page.listItems[i].init_arrow(line_type=line.line_type, show_arrow=line.show_arrow, force_redraw=True)
 
 
 def render_menu(app, menu_render):

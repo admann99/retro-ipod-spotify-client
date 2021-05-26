@@ -140,6 +140,14 @@ class Datastore():
         return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("album-uri:*")))
 
     @lru_cache(maxsize=50)
+    def getAllSavedArtists(self):
+        return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("artist:*")))
+
+    @lru_cache(maxsize=50)
+    def getAllSavedTracks(self):
+        return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("track:*")))
+
+    @lru_cache(maxsize=50)
     def getAllNewReleases(self):
         return list(map(lambda idx: self._getSavedItem(idx), self.r.keys("nr-uri:*")))
 
