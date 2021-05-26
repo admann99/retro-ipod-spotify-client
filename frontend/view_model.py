@@ -437,14 +437,18 @@ class PlaceHolderPage(MenuPage):
 class DevicesPage(MenuPage):
     def __init__(self, previous_page):
         super().__init__("Devices", previous_page, has_sub_page=True)
+        self.devices = []
 
     def total_size(self):
-        return len(spotify_manager.get_devices())
+        return len(self.devices)
 
     def page_at(self, index):
-        # play track
-        # return SingleTrackPage(spotify_manager.DATASTORE.getSavedDevice(index), self)
-        return SetDevicePage(spotify_manager.get_devices()[index], self)
+        return SetDevicePage(self.devices[index], self)
+
+    def render(self):
+        if not len(self.devices):
+            self.devices = spotify_manager.get_devices()
+        return super().render()
 
 
 class SetDevicePage(MenuPage):
