@@ -274,8 +274,11 @@ def get_now_playing():
         'progress': response['progress_ms'],
         'context_name': artist,
         'track_index': -1,
-        'timestamp': time.time()
+        'timestamp': time.time(),
     }
+    if len(track['album']['images']):
+        now_playing['image'] = track['album']['images'][0]['url']
+
     if not context:
         return now_playing
     if (context['type'] == 'playlist'):

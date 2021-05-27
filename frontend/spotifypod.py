@@ -2,18 +2,20 @@
 # This is me learning Python as I go.
 # This is not how I write code for my day job.
 
-import tkinter as tk
-import socket
-import json
-import time
+from PIL import ImageTk, Image, ImageChops
 from datetime import timedelta
+from io import BytesIO
 from select import select
+from sys import platform
 from tkinter import ttk
 from view_model import *
-from PIL import ImageTk, Image, ImageChops
-from sys import platform
-import os
 import argparse
+import json
+import os
+import requests
+import socket
+import time
+import tkinter as tk
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--windowed', action='store_true')
@@ -61,6 +63,11 @@ def screen_wake():
     screen_on = True
     os.system('xset -display :0 dpms force on')
 
+
+def get_image_from_url(url):
+    response = requests.get(url)
+    img_data = response.content
+    return ImageTk.PhotoImage(Image.open(BytesIO(img_data)).resize((100, 100), Image.ANTIALIAS))
 
 def flattenAlpha(img, invert=True):
     global SCALE
@@ -278,12 +285,18 @@ class NowPlayingFrame(tk.Frame):
         self.remaining_time.pack(side=tk.RIGHT)
         self.cached_album = None
         self.cached_artist = None
-
-    def update_now_playing(self, now_playing):
-        not_found = tk.PhotoImage(file='album_not_found.png')
         self.not_found = ImageTk.PhotoImage(Image.open('album_not_found.png').resize((100, 100), Image.ANTIALIAS))
+        self.current_image = self.not_found
+        self.album_art_url = None
         self.album_image = self.album_art.create_image(0, 0, image=self.not_found, anchor='nw')
         self.album_art.pack()
+
+    def update_now_playing(self, now_playing):
+        if now_playing and self.album_art_url != now_playing['image']:
+            self.album_art_url = now_playing['image']
+            self.current_image = get_image_from_url(self.album_art_url) if self.album_art_url else self.not_found
+        self.album_art.itemconfig(self.album_image, image=self.current_image)
+
         self.header_container.set_text('Now playing')
         # if not self.inflated:
         #     parent_width = self.winfo_width()
