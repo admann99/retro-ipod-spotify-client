@@ -5,7 +5,7 @@ import threading
 import time
 import json
 
-DEVICE_NAME = "raspotify"
+DEVICE_NAME = "Adam's iPod Classic"
 
 class UserDevice():
     __slots__ = ['id', 'name', 'is_active']

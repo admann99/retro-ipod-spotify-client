@@ -201,7 +201,7 @@ class Marquee(tk.Canvas):
         elif x1 < 0 or y0 < 0 or self.reset:
             self.reset = False
             self.animating = True
-            x0 = 20
+            x0 = 0
             y0 = int(self.winfo_height() / 2)
             self.pause_ctr = 100
             self.coords("text", x0, y0)
@@ -321,7 +321,7 @@ class NowPlayingFrame(tk.Frame):
             self.cached_album = album
         context_name = now_playing['context_name']
         truncd_context = context_name if context_name else "Now Playing"
-        truncd_context = truncd_context if len(truncd_context) < 20 else truncd_context[0:17] + "..."
+        truncd_context = truncd_context if len(truncd_context) < 30 else truncd_context[0:27] + "..."
         update_delta = 0 if not now_playing['is_playing'] else (time.time() - now_playing["timestamp"]) * 1000.0
         adjusted_progress_ms = now_playing['progress'] + update_delta
         adjusted_remaining_ms = max(0, now_playing['duration'] - adjusted_progress_ms)
@@ -420,7 +420,7 @@ class ListItem(GradiantCanvas):
         bgColor = SPOT_BLUE if line_type == LINE_HIGHLIGHT else SPOT_WHITE
         txtColor = SPOT_WHITE if line_type == LINE_HIGHLIGHT else \
             (SPOT_BLACK if line_type == LINE_NORMAL else SPOT_WHITE)
-        truncd_text = text if len(text) < 17 else text[0:15] + "..."
+        truncd_text = text if len(text) < 27 else text[0:25] + "..."
         arrowImg = self.empty_arrow_image if not show_arrow else \
             (self.white_arrow_image if line_type == LINE_HIGHLIGHT else self.black_arrow_image)
         if line_type == LINE_HIGHLIGHT:
@@ -443,7 +443,7 @@ class Header(GradiantCanvas):
         self.wifi_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_wifi.png')))
 
     def set_text(self, text='', now_playing=None, has_wifi=False):
-        text = text if len(text) < 20 else text[0:17] + "..."
+        text = text if len(text) < 30 else text[0:27] + "..."
         play_image = self.space_image
         if now_playing is not None:
             play_image = self.play_image if now_playing['is_playing'] else self.pause_image
